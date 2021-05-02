@@ -1,0 +1,7 @@
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\obj\Debug\MathsLibrary.csproj.CoreCompileInputs.cache
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\bin\Debug\MathsLibrary.dll.config
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\bin\Debug\MathsLibrary.dll
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\bin\Debug\MathsLibrary.pdb
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\obj\Debug\MathsLibrary.dll
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\obj\Debug\MathsLibrary.pdb
+C:\Users\Rachid\source\repos\eiin839\MathsLibrary\MathsLibrary\obj\Debug\MathsLibrary.csprojAssemblyReference.cache
