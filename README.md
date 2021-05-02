@@ -4,7 +4,7 @@
 Application which would allow the user to find its way from any location to any other location (in a same city for a first release) by using as much as possible the bikes offered by JC Decaux.
 
 # Architecture
-[alt Image architecture](architecture.png)
+![alt image architecture](architecture.png)
 
 # Features
 * __Display the shortest path between two adresses for the client__
