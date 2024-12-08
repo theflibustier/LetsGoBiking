@@ -10,8 +10,11 @@
 namespace JCAdminEndP
 {
     using System.Runtime.Serialization;
-    
-    
+    using Apache.NMS;
+    using Apache.NMS.ActiveMQ;
+    using System.Threading.Tasks;
+    using System.Text.Json;
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Runtime.Serialization.DataContractAttribute(Name="CompositeType", Namespace="http://schemas.datacontract.org/2004/07/RoutingBikes")]
@@ -49,133 +52,67 @@ namespace JCAdminEndP
         }
     }
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="JCAdminEndP.IRoutingBikesSoap")]
     public interface IRoutingBikesSoap
     {
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IRoutingBikesSoap/getStatsByStation", ReplyAction="http://tempuri.org/IRoutingBikesSoap/getStatsByStationResponse")]
-        System.Threading.Tasks.Task<JCAdminEndP.CompositeType> getStatsByStationAsync(string stationName);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IRoutingBikesSoap/getMostUsedStation", ReplyAction="http://tempuri.org/IRoutingBikesSoap/getMostUsedStationResponse")]
-        System.Threading.Tasks.Task<JCAdminEndP.CompositeType> getMostUsedStationAsync();
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IRoutingBikesSoap/getLastUsedStation", ReplyAction="http://tempuri.org/IRoutingBikesSoap/getLastUsedStationResponse")]
-        System.Threading.Tasks.Task<JCAdminEndP.CompositeType> getLastUsedStationAsync();
+        Task<CompositeType> getStatsByStationAsync(string stationName);
+        Task<CompositeType> getMostUsedStationAsync();
+        Task<CompositeType> getLastUsedStationAsync();
     }
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    public interface IRoutingBikesSoapChannel : JCAdminEndP.IRoutingBikesSoap, System.ServiceModel.IClientChannel
+    public class RoutingBikesSoapClient : IRoutingBikesSoap
     {
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    public partial class RoutingBikesSoapClient : System.ServiceModel.ClientBase<JCAdminEndP.IRoutingBikesSoap>, JCAdminEndP.IRoutingBikesSoap
-    {
-        
-        /// <summary>
-        /// Implement this partial method to configure the service endpoint.
-        /// </summary>
-        /// <param name="serviceEndpoint">The endpoint to configure</param>
-        /// <param name="clientCredentials">The client credentials</param>
-        static partial void ConfigureEndpoint(System.ServiceModel.Description.ServiceEndpoint serviceEndpoint, System.ServiceModel.Description.ClientCredentials clientCredentials);
-        
-        public RoutingBikesSoapClient() : 
-                base(RoutingBikesSoapClient.GetDefaultBinding(), RoutingBikesSoapClient.GetDefaultEndpointAddress())
+        private readonly string brokerUri;
+        private readonly string userName;
+        private readonly string password;
+
+        public RoutingBikesSoapClient(string brokerUri, string userName, string password)
         {
-            this.Endpoint.Name = EndpointConfiguration.BasicHttpBinding_IRoutingBikesSoap.ToString();
-            ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+            this.brokerUri = brokerUri;
+            this.userName = userName;
+            this.password = password;
         }
-        
-        public RoutingBikesSoapClient(EndpointConfiguration endpointConfiguration) : 
-                base(RoutingBikesSoapClient.GetBindingForEndpoint(endpointConfiguration), RoutingBikesSoapClient.GetEndpointAddress(endpointConfiguration))
+
+        public async Task<CompositeType> getStatsByStationAsync(string stationName)
         {
-            this.Endpoint.Name = endpointConfiguration.ToString();
-            ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+            return await SendRequestAsync<CompositeType>("getStatsByStation", stationName);
         }
-        
-        public RoutingBikesSoapClient(EndpointConfiguration endpointConfiguration, string remoteAddress) : 
-                base(RoutingBikesSoapClient.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
+
+        public async Task<CompositeType> getMostUsedStationAsync()
         {
-            this.Endpoint.Name = endpointConfiguration.ToString();
-            ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+            return await SendRequestAsync<CompositeType>("getMostUsedStation", null);
         }
-        
-        public RoutingBikesSoapClient(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(RoutingBikesSoapClient.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
+
+        public async Task<CompositeType> getLastUsedStationAsync()
         {
-            this.Endpoint.Name = endpointConfiguration.ToString();
-            ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+            return await SendRequestAsync<CompositeType>("getLastUsedStation", null);
         }
-        
-        public RoutingBikesSoapClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress)
+
+        private async Task<T> SendRequestAsync<T>(string operation, string parameter)
         {
-        }
-        
-        public System.Threading.Tasks.Task<JCAdminEndP.CompositeType> getStatsByStationAsync(string stationName)
-        {
-            return base.Channel.getStatsByStationAsync(stationName);
-        }
-        
-        public System.Threading.Tasks.Task<JCAdminEndP.CompositeType> getMostUsedStationAsync()
-        {
-            return base.Channel.getMostUsedStationAsync();
-        }
-        
-        public System.Threading.Tasks.Task<JCAdminEndP.CompositeType> getLastUsedStationAsync()
-        {
-            return base.Channel.getLastUsedStationAsync();
-        }
-        
-        public virtual System.Threading.Tasks.Task OpenAsync()
-        {
-            return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
-        }
-        
-        public virtual System.Threading.Tasks.Task CloseAsync()
-        {
-            return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginClose(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndClose));
-        }
-        
-        private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
-        {
-            if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_IRoutingBikesSoap))
+            IConnectionFactory factory = new ConnectionFactory(brokerUri);
+            using (IConnection connection = factory.CreateConnection(userName, password))
             {
-                System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding();
-                result.MaxBufferSize = int.MaxValue;
-                result.ReaderQuotas = System.Xml.XmlDictionaryReaderQuotas.Max;
-                result.MaxReceivedMessageSize = int.MaxValue;
-                result.AllowCookies = true;
-                return result;
+                connection.Start();
+                using (ISession session = connection.CreateSession())
+                {
+                    IDestination destination = session.GetQueue("RoutingBikesQueue");
+                    using (IMessageProducer producer = session.CreateProducer(destination))
+                    {
+                        IMessage requestMessage = session.CreateTextMessage(JsonSerializer.Serialize(new { Operation = operation, Parameter = parameter }));
+                        producer.Send(requestMessage);
+
+                        using (IMessageConsumer consumer = session.CreateConsumer(destination))
+                        {
+                            IMessage responseMessage = consumer.Receive();
+                            if (responseMessage is ITextMessage textMessage)
+                            {
+                                return JsonSerializer.Deserialize<T>(textMessage.Text);
+                            }
+                        }
+                    }
+                }
             }
-            throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
-        }
-        
-        private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration)
-        {
-            if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_IRoutingBikesSoap))
-            {
-                return new System.ServiceModel.EndpointAddress("http://localhost:10002/RoutingBikes/RoutingBikesSoap");
-            }
-            throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
-        }
-        
-        private static System.ServiceModel.Channels.Binding GetDefaultBinding()
-        {
-            return RoutingBikesSoapClient.GetBindingForEndpoint(EndpointConfiguration.BasicHttpBinding_IRoutingBikesSoap);
-        }
-        
-        private static System.ServiceModel.EndpointAddress GetDefaultEndpointAddress()
-        {
-            return RoutingBikesSoapClient.GetEndpointAddress(EndpointConfiguration.BasicHttpBinding_IRoutingBikesSoap);
-        }
-        
-        public enum EndpointConfiguration
-        {
-            
-            BasicHttpBinding_IRoutingBikesSoap,
+            return default(T);
         }
     }
 }

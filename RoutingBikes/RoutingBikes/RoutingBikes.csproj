@@ -67,6 +67,8 @@
     <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Apache.NMS" />
+    <Reference Include="Apache.NMS.ActiveMQ" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Availabilities.cs" />

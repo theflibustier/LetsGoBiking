@@ -1,5 +1,8 @@
 ﻿using Aspose.Cells;
 using System;
+using Apache.NMS;
+using Apache.NMS.ActiveMQ;
+using System.Text.Json;
 
 namespace RoutingBikes
 {
@@ -8,71 +11,60 @@ namespace RoutingBikes
     {
         private Workbook wb;
         private Worksheet sheet;
+        private readonly string brokerUri;
+        private readonly string userName;
+        private readonly string password;
 
         public RoutingBikesSoap()
         {
             wb = new Workbook(@"Excel.xlsx");
             sheet = wb.Worksheets[0];
+            brokerUri = System.Configuration.ConfigurationManager.AppSettings["activemq.brokerUri"];
+            userName = System.Configuration.ConfigurationManager.AppSettings["activemq.userName"];
+            password = System.Configuration.ConfigurationManager.AppSettings["activemq.password"];
         }
+
         public CompositeType getMostUsedStation()
         {
-            int index = 0;
-            int maxVal = 0;
-            for (int i = 0; i < sheet.Cells.GetLastDataRow(1); i++)
-            {
-                if (maxVal < int.Parse(sheet.Cells.GetRow(i).GetCellOrNull(1).StringValue))
-                {
-                    index = i;
-                }
-            }
-            string station = sheet.Cells.GetRow(index).GetCellOrNull(0).StringValue;
-            string val = sheet.Cells.GetRow(index).GetCellOrNull(1).StringValue;
-            return new CompositeType(station, parseStat(val));
-        }
-
-
-        private string parseStat(string value)
-        {
-            int sum = getTotalOfUsagesAllStations();
-            double res = (int.Parse(value) * 1.0 / sum) * 100;
-            return String.Format("{0:0.00}", res);
-        }
-
-        private int getTotalOfUsagesAllStations()
-        {
-            int sum = 0;
-            for (int i = 0; i <= sheet.Cells.GetLastDataRow(1); i++)
-            {
-                sum +=int.Parse(sheet.Cells.GetRow(i).GetCellOrNull(1).StringValue);
-            }
-            return sum;
+            return SendRequest<CompositeType>("getMostUsedStation", null);
         }
 
         public CompositeType getStatsByStation(string stationName)
         {
-            FindOptions opts = new FindOptions();
-            opts.LookInType = LookInType.Values;
-            opts.LookAtType = LookAtType.EntireContent;
-
-            Cell cell = sheet.Cells.Find(stationName, null, opts);
-
-            return new CompositeType(cell.StringValue, parseStat(sheet.Cells[cell.Row, 1].StringValue));
+            return SendRequest<CompositeType>("getStatsByStation", stationName);
         }
 
         public CompositeType getLastUsedStation()
         {
-            string station = sheet.Cells.GetRow(0).GetCellOrNull(0).StringValue;
-            string val = sheet.Cells.GetRow(0).GetCellOrNull(1).StringValue;
-            DateTime upper = DateTime.Parse(sheet.Cells.GetRow(0).GetCellOrNull(2).StringValue);
-            for (int i = 0; i < sheet.Cells.GetLastDataRow(1); i++)
+            return SendRequest<CompositeType>("getLastUsedStation", null);
+        }
+
+        private T SendRequest<T>(string operation, string parameter)
+        {
+            IConnectionFactory factory = new ConnectionFactory(brokerUri);
+            using (IConnection connection = factory.CreateConnection(userName, password))
             {
-                if(DateTime.Parse(sheet.Cells.GetRow(i).GetCellOrNull(2).StringValue).CompareTo(upper) >= 0)
+                connection.Start();
+                using (ISession session = connection.CreateSession())
                 {
-                    station = sheet.Cells.GetRow(i).GetCellOrNull(0).StringValue;
-                    val = sheet.Cells.GetRow(i).GetCellOrNull(1).StringValue;
+                    IDestination destination = session.GetQueue("RoutingBikesQueue");
+                    using (IMessageProducer producer = session.CreateProducer(destination))
+                    {
+                        IMessage requestMessage = session.CreateTextMessage(JsonSerializer.Serialize(new { Operation = operation, Parameter = parameter }));
+                        producer.Send(requestMessage);
+
+                        using (IMessageConsumer consumer = session.CreateConsumer(destination))
+                        {
+                            IMessage responseMessage = consumer.Receive();
+                            if (responseMessage is ITextMessage textMessage)
+                            {
+                                return JsonSerializer.Deserialize<T>(textMessage.Text);
+                            }
+                        }
+                    }
                 }
             }
-            return new CompositeType(station, parseStat(val));
+            return default(T);
         }
     }
 }
